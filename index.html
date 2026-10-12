@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1F2A37">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>Dock Manager</title>
+<style>
+:root{--ink:#1F2A37;--steel:#344256;--bg:#EEF1F4;--card:#fff;--line:#D3D9E0;--mute:#6B7787;--yel:#FFC400;
+--ok:#1E8E4E;--warn:#D9480F;--info:#1C6DD0;--grey:#6B7787}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:84px}
+header{background:var(--ink);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:5;border-bottom:4px solid var(--yel)}
+header h1{font-size:19px;font-weight:800;letter-spacing:.2px;display:flex;justify-content:space-between;align-items:center}
+header small{font-weight:500;font-size:12px;color:#B9C3CF}
+.bar{display:flex;gap:8px;margin-top:10px;overflow-x:auto}
+.bar select,.bar input{background:var(--steel);color:#fff;border:0;border-radius:8px;padding:8px 10px;font-size:14px;min-width:0}
+.bar input{flex:1;min-width:110px}.bar input::placeholder{color:#9AA7B6}
+main{padding:14px 14px 0}
+h2{font-size:15px;margin:18px 0 8px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.k{background:var(--card);border-radius:10px;padding:12px;border-left:6px solid var(--grey);text-align:left;border-top:0;border-right:0;border-bottom:0;font:inherit;color:inherit;cursor:pointer}
+.k b{display:block;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.k span{font-size:13px;color:var(--mute)}
+.k.ok{border-color:var(--ok)}.k.warn{border-color:var(--warn)}.k.info{border-color:var(--info)}
+.k.wide{grid-column:span 2}
+.sum{font-size:13px;color:var(--mute);margin-top:6px}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:14px}
+th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line)}
+th{background:var(--ink);color:#fff;font-weight:600}th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+.item{background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;border-left:6px solid var(--grey)}
+.item.ok{border-color:var(--ok)}.item.warn{border-color:var(--warn)}.item.info{border-color:var(--info)}
+.row1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.vn{font-size:18px;font-weight:800;letter-spacing:.5px}
+.chip{font-size:12px;font-weight:700;padding:4px 9px;border-radius:99px;color:#fff;background:var(--grey);white-space:nowrap}
+.chip.ok{background:var(--ok)}.chip.warn{background:var(--warn)}.chip.info{background:var(--info)}
+.route{margin:6px 0 2px;font-size:14px}.meta{font-size:12.5px;color:var(--mute)}
+.tag{display:inline-block;background:var(--ink);color:var(--yel);font-weight:700;font-size:11.5px;padding:2px 7px;border-radius:5px;margin-right:6px}
+.empty{text-align:center;color:var(--mute);padding:40px 10px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{flex:1;border:0;background:none;padding:13px 4px;font:inherit;font-size:14px;font-weight:600;color:var(--mute);border-top:4px solid transparent}
+nav button.on{color:var(--ink);border-top-color:var(--yel)}
+.fab{position:fixed;right:16px;bottom:78px;width:58px;height:58px;border-radius:50%;border:0;background:var(--yel);color:var(--ink);font-size:32px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.3);z-index:7;display:none}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:none;align-items:flex-end}
+.sheet.show{display:flex}
+.panel{background:#fff;width:100%;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px 24px}
+.panel h3{margin-bottom:10px}
+label{display:block;font-size:12.5px;color:var(--mute);margin:10px 0 4px;font-weight:600}
+.panel input,.panel select{width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;font-size:16px;background:#fff;color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.st{display:flex;flex-wrap:wrap;gap:8px}
+.st button{flex:1;min-width:30%;padding:11px 6px;border-radius:8px;border:2px solid var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:var(--ink)}
+.st button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.acts{display:flex;gap:10px;margin-top:18px}
+.btn{flex:1;padding:14px;border-radius:10px;border:0;font-size:16px;font-weight:800;background:var(--yel);color:var(--ink)}
+.btn.sec{background:#fff;border:2px solid var(--line);flex:0 0 auto;padding:14px 18px}
+.btn.del{background:#fff;color:var(--warn);border:2px solid var(--warn);flex:0 0 auto;padding:14px 18px}
+#toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;z-index:30;display:none;max-width:90%}
+#sync{font-size:12px;color:#B9C3CF}
+:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>Dock Manager</span><span id="sync"></span></h1>
+  <div class="bar">
+    <select id="fRange"><option value="today">Aaj</option><option value="7">7 din</option><option value="all">Sabhi</option></select>
+    <select id="fShift"><option value="">Sabhi shift</option><option>Morning</option><option>Evening</option><option>Night</option></select>
+    <input id="fQ" type="search" placeholder="Vehicle no. search">
+  </div>
+</header>
+<main id="main"></main>
+<button class="fab" id="fab" aria-label="Naya vehicle jodo">+</button>
+<nav>
+  <button data-t="report" class="on">Report</button>
+  <button data-t="Arrival">Arrival</button>
+  <button data-t="Dispatch">Dispatch</button>
+</nav>
+<div class="sheet" id="sheet"><div class="panel" id="panel"></div></div>
+<div id="toast"></div>
+<datalist id="places"></datalist>
+
+<script>
+// ===== Config: Apps Script Web App URL yahan paste karo (ya pehli baar app khulne par poochega) =====
+const API_DEFAULT = 'https://script.google.com/a/macros/flipkart.com/s/AKfycbyw4oas8rA8krzPVN7KJMNVjflb-GmpYGdHlJeefqZRY1_4vt3gDSFXRsns0D4OdXg3HA/exec';
+// =============================================================================================
+const API = API_DEFAULT || localStorage.getItem('dock_api') || '';
+const STATUS = {
+  Arrival: ['On Dock', 'Unloading Pending', 'Unloading Done'],
+  Dispatch: ['Dispatch Pending', 'Dispatch Done']
+};
+const CLS = {'On Dock':'info','Unloading Pending':'warn','Unloading Done':'ok','Dispatch Pending':'warn','Dispatch Done':'ok'};
+const CONN = ['SH','FK','DC','Local','National'];
+const SHIFTS = ['Morning','Evening','Night'];
+
+let rows = JSON.parse(localStorage.getItem('dock_rows') || '[]');
+let queue = JSON.parse(localStorage.getItem('dock_q') || '[]');
+let tab = 'report', stFilter = '', editing = null, draft = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const nowLocal = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const shiftOf = dt => { const h = +dt.slice(11, 13); return h >= 6 && h < 14 ? 'Morning' : h >= 14 && h < 22 ? 'Evening' : 'Night'; };
+const fmt = dt => { const d = new Date(dt); return isNaN(d) ? dt : d.toLocaleString('en-IN', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}); };
+const toast = m => { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 2500); };
+const persist = () => { localStorage.setItem('dock_rows', JSON.stringify(rows)); localStorage.setItem('dock_q', JSON.stringify(queue)); };
+
+// ---------- data ----------
+async function post(body) {
+  const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(body)});
+  const j = await r.json(); if (!j.ok) throw new Error(j.error);
+}
+async function flush() {
+  while (queue.length) { await post(queue[0]); queue.shift(); persist(); }
+}
+async function load() {
+  if (!API) return setSync('URL set nahi');
+  setSync('sync...');
+  try {
+    await flush();
+    const j = await (await fetch(API)).json();
+    if (!j.ok) throw new Error();
+    rows = j.rows; persist(); setSync('Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}));
+    render();
+  } catch { setSync('Offline'); }
+}
+const setSync = t => $('#sync').textContent = t;
+function save(row) {
+  const i = rows.findIndex(r => r.id === row.id);
+  i >= 0 ? rows[i] = row : rows.unshift(row);
+  queue.push({action: 'upsert', id: row.id, row}); persist(); render();
+  load();
+}
+function remove(id) {
+  rows = rows.filter(r => r.id !== id);
+  queue.push({action: 'delete', id}); persist(); render(); load();
+}
+
+// ---------- filters ----------
+function scoped() {
+  const range = $('#fRange').value, sh = $('#fShift').value, q = $('#fQ').value.trim().toUpperCase();
+  const today = nowLocal().slice(0, 10), lim = Date.now() - 7 * 864e5;
+  return rows.filter(r =>
+    (range === 'all' || (range === 'today' ? r.datetime.slice(0, 10) === today : new Date(r.datetime) >= lim)) &&
+    (!sh || r.shift === sh) && (!q || r.vehicle_no.toUpperCase().includes(q)));
+}
+const n = (l, s) => l.filter(r => r.status === s).length;
+const sum = (l, k) => l.reduce((a, r) => a + (+r[k] || 0), 0);
+
+// ---------- render ----------
+function render() {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+  $('#fab').style.display = tab === 'report' ? 'none' : 'block';
+  $('#places').innerHTML = [...new Set(rows.flatMap(r => [r.source, r.destination]).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('');
+  const f = scoped();
+  tab === 'report' ? renderReport(f) : renderList(f.filter(r => r.type === tab));
+}
+function card(label, val, cls, type, status) {
+  return `<button class="k ${cls}" data-go="${type}" data-st="${esc(status || '')}"><b>${val}</b><span>${label}</span></button>`;
+}
+function renderReport(f) {
+  const a = f.filter(r => r.type === 'Arrival'), d = f.filter(r => r.type === 'Dispatch');
+  const conn = CONN.map(c => `<tr><td>${c}</td><td>${a.filter(r => r.connection === c).length}</td><td>${d.filter(r => r.connection === c).length}</td></tr>`).join('');
+  $('#main').innerHTML = `
+  <h2>Arrival (vehicle aaye)</h2>
+  <div class="grid">
+    ${card('Total vehicle', a.length, '', 'Arrival')}
+    ${card('On Dock', n(a, 'On Dock'), 'info', 'Arrival', 'On Dock')}
+    ${card('Unloading pending', n(a, 'Unloading Pending'), 'warn', 'Arrival', 'Unloading Pending')}
+    ${card('Unloading done', n(a, 'Unloading Done'), 'ok', 'Arrival', 'Unloading Done')}
+  </div>
+  <p class="sum">Bags: <b>${sum(a, 'bags')}</b> &nbsp; Shipments: <b>${sum(a, 'shipments')}</b></p>
+  <h2>Dispatch (vehicle gaye)</h2>
+  <div class="grid">
+    ${card('Total vehicle', d.length, '', 'Dispatch')}
+    ${card('Dispatch pending', n(d, 'Dispatch Pending'), 'warn', 'Dispatch', 'Dispatch Pending')}
+    ${card('Dispatch done', n(d, 'Dispatch Done'), 'ok', 'Dispatch', 'Dispatch Done')}
+  </div>
+  <p class="sum">Bags: <b>${sum(d, 'bags')}</b> &nbsp; Shipments: <b>${sum(d, 'shipments')}</b></p>
+  <h2>Connection type ke hisaab se</h2>
+  <table><tr><th>Type</th><th>Arrival</th><th>Dispatch</th></tr>${conn}</table>`;
+}
+function renderList(l) {
+  const sts = STATUS[tab];
+  const chips = ['', ...sts].map(s => `<button class="chip ${stFilter === s ? 'info' : ''}" data-f="${esc(s)}" style="border:0;margin:0 6px 10px 0;${stFilter === s ? '' : 'background:#B9C3CF'}">${s || 'Sabhi'} (${s ? n(l, s) : l.length})</button>`).join('');
+  l = stFilter ? l.filter(r => r.status === stFilter) : l;
+  $('#main').innerHTML = `<div style="overflow-x:auto;white-space:nowrap">${chips}</div>` + (l.length ? l.map(r => `
+    <div class="item ${CLS[r.status] || ''}" data-id="${esc(r.id)}">
+      <div class="row1"><span class="vn">${esc(r.vehicle_no)}</span><span class="chip ${CLS[r.status] || ''}">${esc(r.status)}</span></div>
+      <div class="route"><span class="tag">${esc(r.connection)}</span>${esc(r.source)} &rarr; ${esc(r.destination)}</div>
+      <div class="meta">Bags ${esc(r.bags)} &bull; Shipments ${esc(r.shipments)} &bull; ${esc(r.shift)} &bull; ${fmt(r.datetime)}</div>
+    </div>`).join('') : `<div class="empty">Koi vehicle nahi. + dabake ${tab === 'Arrival' ? 'arrival' : 'dispatch'} jodo.</div>`);
+}
+
+// ---------- form ----------
+function openForm(id) {
+  const ex = rows.find(r => r.id === id);
+  draft = ex ? {...ex} : {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), type: tab, vehicle_no: '', bags: '', shipments: '',
+    datetime: nowLocal(), shift: shiftOf(nowLocal()), source: '', destination: '', connection: 'SH', status: STATUS[tab][0]};
+  editing = !!ex;
+  const d = draft, opts = (a, v) => a.map(x => `<option ${x === v ? 'selected' : ''}>${x}</option>`).join('');
+  $('#panel').innerHTML = `
+  <h3>${editing ? 'Vehicle update' : (d.type === 'Arrival' ? 'Naya arrival' : 'Naya dispatch')}</h3>
+  <label>Status</label>
+  <div class="st">${STATUS[d.type].map(s => `<button type="button" data-s="${s}" class="${d.status === s ? 'on' : ''}">${s}</button>`).join('')}</div>
+  <label>Vehicle number</label><input id="vn" value="${esc(d.vehicle_no)}" autocapitalize="characters" placeholder="HR55AB1234">
+  <div class="two">
+    <div><label>Bag count</label><input id="bg" type="number" inputmode="numeric" min="0" value="${esc(d.bags)}"></div>
+    <div><label>Total shipments</label><input id="sp" type="number" inputmode="numeric" min="0" value="${esc(d.shipments)}"></div>
+  </div>
+  <div class="two">
+    <div><label>Date & time</label><input id="dt" type="datetime-local" value="${esc(d.datetime)}"></div>
+    <div><label>Shift</label><select id="sh">${opts(SHIFTS, d.shift)}</select></div>
+  </div>
+  <label>Source</label><input id="src" list="places" value="${esc(d.source)}">
+  <label>Destination</label><input id="dst" list="places" value="${esc(d.destination)}">
+  <label>Connection type</label><select id="cn">${opts(CONN, d.connection)}</select>
+  <div class="acts">
+    ${editing ? '<button class="btn del" id="del">Delete</button>' : ''}
+    <button class="btn sec" id="cancel">Cancel</button>
+    <button class="btn" id="saveBtn">Save</button>
+  </div>`;
+  $('#sheet').classList.add('show');
+  $('#dt').onchange = e => { if (e.target.value) $('#sh').value = shiftOf(e.target.value); };
+}
+const closeForm = () => $('#sheet').classList.remove('show');
+function commit() {
+  const d = draft;
+  d.vehicle_no = $('#vn').value.trim().toUpperCase().replace(/\s+/g, '');
+  d.bags = $('#bg').value; d.shipments = $('#sp').value; d.datetime = $('#dt').value; d.shift = $('#sh').value;
+  d.source = $('#src').value.trim(); d.destination = $('#dst').value.trim(); d.connection = $('#cn').value;
+  if (!d.vehicle_no) return toast('Vehicle number daalo');
+  if (!d.datetime) return toast('Date & time daalo');
+  closeForm(); save(d); toast('Saved');
+}
+
+// ---------- events ----------
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,.item'); if (!t) return;
+  if (t.closest('nav')) { tab = t.dataset.t; stFilter = ''; render(); window.scrollTo(0, 0); }
+  else if (t.id === 'fab') openForm();
+  else if (t.dataset.go) { tab = t.dataset.go; stFilter = t.dataset.st; render(); window.scrollTo(0, 0); }
+  else if (t.dataset.f !== undefined) { stFilter = t.dataset.f; render(); }
+  else if (t.classList.contains('item')) openForm(t.dataset.id);
+  else if (t.dataset.s) { draft.status = t.dataset.s; t.parentNode.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === t)); }
+  else if (t.id === 'saveBtn') commit();
+  else if (t.id === 'cancel') closeForm();
+  else if (t.id === 'del') { if (confirm('Ye vehicle delete karna hai?')) { closeForm(); remove(draft.id); } }
+});
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeForm(); });
+['fRange', 'fShift', 'fQ'].forEach(i => $('#' + i).addEventListener('input', render));
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if (!API) {
+  const u = prompt('Google Apps Script Web App URL paste karo:');
+  if (u) { localStorage.setItem('dock_api', u.trim()); location.reload(); }
+}
+render(); load(); setInterval(load, 30000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+</script>
+</body>
+</html>
